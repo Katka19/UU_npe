@@ -1,8 +1,9 @@
+double function(double *x, double *p);
 void mult(){
 
 	//TFile *inFile = TFile::Open("MultCorrAll.root");
 	//TFile *inFile = TFile::Open("MultCorrNoList2.root");
-	TFile *inFile = TFile::Open("../../../MultCorrWeight2.root");	
+	TFile *inFile = TFile::Open("../../../MultCorr/MultCorrGoodRunsAll.root");	
 
 	TH1F *mult = (TH1F*)inFile->Get("mult_runid")->Clone("mult");
 	TH1F *event = (TH1F*)inFile->Get("event_runid")->Clone("event");
@@ -67,7 +68,7 @@ cout<<"entries = "<<mult_cut->GetEntries()<<endl;
 	leg->AddEntry(mult_cut,"central5+StRefMultCorr");
 	leg->Draw("same");
 
-	//can->SaveAs("multEvent_vs_RunID_allMuDst.pdf");
+	can->SaveAs("multEvent_vs_RunID_allMuDstGoodRuns.pdf");
 /*
 	mult_zoom->GetXaxis()->SetTitle("refMult/Events");
 	mult_zoom->GetYaxis()->SetTitle("runID");
@@ -86,6 +87,9 @@ cout<<"entries = "<<mult_cut->GetEntries()<<endl;
 	
 	//can->SaveAs("multEvent_vs_RunID_allMuDst_zoom_noList2.pdf");
 */
+
+	TCanvas *can3 = new TCanvas("can3","",600,450);
+
 	multCorr->Scale(1./multCorr->Integral(600,800));
 	multCorr_cent->Scale(1./multCorr_cent->Integral(600,800));
 	multCorr_cent_cut->Scale(1./multCorr_cent_cut->Integral(600,800));
@@ -110,8 +114,8 @@ cout<<"entries = "<<mult_cut->GetEntries()<<endl;
 	leg2->AddEntry(multCorr_cent_cut, "central5+StRegMultCorr");
 	leg2->Draw("same");
 
-	can->SetLogy();
-	//can->SaveAs("refMult_allMuDst_NoList3.pdf");
+	can3->SetLogy();
+	can3->SaveAs("refMult_allMuDstGoodRuns.pdf");
 
 	//..calculate weight
 
@@ -145,7 +149,12 @@ cout<<"entries = "<<mult_cut->GetEntries()<<endl;
 	line->SetLineStyle(2);
 	line->Draw("same");
 
-	//can2->SaveAs("Weight_allMuDstNoList3.pdf");
+	gStyle->SetOptFit(1111);
+
+	TF1 *fitWeight = new TF1("fitWeight", "pol5", 530, 740);//,4);
+	weight->Fit(fitWeight, "R");
+
+	can2->SaveAs("Weight_allMuDstGoodRuns.pdf");
 
 /*	TFile *f = new TFile("weight_allMuDst_noList2.root","recreate");
 	weight->Write();
@@ -173,4 +182,12 @@ cout<<"entries = "<<mult_cut->GetEntries()<<endl;
 */
 
 	
+}
+
+double function(double *x, double *p)
+{
+
+	if(x[0] < 650) return p[0] + p[1]*x[0] + p[2]*x[0]*x[0] + p[3]*x[0]*x[0]*x[0];
+	else return p[0] + p[1]*x[0] + p[2]*x[0]*x[0];
+
 }
